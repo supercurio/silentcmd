@@ -19,11 +19,11 @@ use std::i32;
 
 
 const USAGE: &str = "
-WAV signal detection.
+Silent Command for WAV file.
 
 Usage:
-  signal-detect-wav <file> [--window=<samples>]
-  signal-detect-wav --version
+  silentcmd-wav <file> [--window=<samples>]
+  silentcmd --version
 
 Options:
   -h --help             Show this screen.

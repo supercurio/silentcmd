@@ -14,10 +14,10 @@ use std::sync::mpsc;
 use switch::SwitchStatus;
 
 const USAGE: &str = "
-Signal detector JACK plugin.
+Silent Command JACK plugin.
 
 Usage:
-  audio-detect-jack <cmd-on> <cmd-off> [--threshold=<db> --timeout=<s> --verbose]
+  silentcmd-jack <cmd-on> <cmd-off> [--threshold=<db> --timeout=<s> --verbose]
 
 Options:
   -h --help         Show this screen.
@@ -43,7 +43,7 @@ fn main() {
 
     // Create client
     let (client, _status) =
-        jack::Client::new("signal_detection", jack::ClientOptions::NO_START_SERVER).unwrap();
+        jack::Client::new("silentcmd", jack::ClientOptions::NO_START_SERVER).unwrap();
 
     // Register ports. They will be used in a callback that will be
     // called when new data is available.

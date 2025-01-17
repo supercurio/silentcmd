@@ -1,5 +1,5 @@
 [package]
-name = "audio-signal-detect"
+name = "silentcmd"
 version = "0.1.0"
 authors = ["François Simond <dev@supercurio.net>"]
 
@@ -15,13 +15,13 @@ hound = "3.3.0"
 alsa = "0.2.0"
 
 [[bin]]
-name = "signal-detect-jack"
+name = "silentcmd-jack"
 path = "src/jack_plugin.rs"
 
 [[bin]]
-name = "signal-detect-wav"
+name = "silentcmd-wav"
 path = "src/wav_detect.rs"
 
 [[bin]]
-name = "signal-detect-alsa"
+name = "silentcmd-alsa"
 path = "src/alsa_detect.rs"

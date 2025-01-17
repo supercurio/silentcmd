@@ -16,10 +16,10 @@ use std::sync::mpsc;
 use switch::SwitchStatus;
 
 const USAGE: &str = "
-ALSA signal detection.
+Silent Command for ALSA.
 
 Usage:
-  signal-detect-alsa <cmd-on> <cmd-off> [--device=<alsa-device> --channels=<1,2> --threshold=<db> --timeout=<s> --sample-rate=<Hz> --buffer-size=<samples> --bits=<resolution> --verbose]
+  silentcmd-alsa <cmd-on> <cmd-off> [--device=<alsa-device> --channels=<1,2> --threshold=<db> --timeout=<s> --sample-rate=<Hz> --buffer-size=<samples> --bits=<resolution> --verbose]
 
 Options:
   -h --help                 Show this screen.
