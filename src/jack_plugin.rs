@@ -1,16 +1,16 @@
 #[macro_use]
 extern crate serde_derive;
+extern crate dasp;
 extern crate docopt;
 extern crate jack;
-extern crate dasp;
 
 pub mod common;
 pub mod switch;
 
-use std::io;
-use docopt::Docopt;
 use dasp::{envelope, ring_buffer};
-use dasp::{signal, Signal, signal::envelope::SignalEnvelope};
+use dasp::{signal, signal::envelope::SignalEnvelope, Signal};
+use docopt::Docopt;
+use std::io;
 use std::sync::mpsc;
 use switch::SwitchStatus;
 
@@ -48,16 +48,16 @@ fn main() {
 
     // Register ports. They will be used in a callback that will be
     // called when new data is available.
-    let in_port = client.register_port("in_1", jack::AudioIn::default()).unwrap();
+    let in_port = client
+        .register_port("in_1", jack::AudioIn::default())
+        .unwrap();
 
     let buffer_size = client.buffer_size() as usize;
     let verbose = args.flag_verbose;
 
     let ring_buffer = ring_buffer::Fixed::from(vec![[0.0]; buffer_size]);
     let (tx, rx) = mpsc::channel();
-    let mut switch = SwitchStatus::new(args.flag_threshold,
-                                       args.flag_timeout,
-                                       tx);
+    let mut switch = SwitchStatus::new(args.flag_threshold, args.flag_timeout, tx);
     SwitchStatus::start(args.arg_cmd_on, args.arg_cmd_off, rx);
 
     let process_callback = move |_: &jack::Client, ps: &jack::ProcessScope| -> jack::Control {
@@ -70,7 +70,7 @@ fn main() {
         jack::Control::Continue
     };
 
-    let process = jack::ClosureProcessHandler::new(process_callback);
+    let process = jack::contrib::ClosureProcessHandler::new(process_callback);
 
     // Activate the client, which starts the processing.
     let active_client = client.activate_async(Notifications, process).unwrap();
@@ -84,15 +84,15 @@ fn main() {
     active_client.deactivate().unwrap();
 }
 
-fn process_buf(rec_buf: &[f32],
-               ring_buffer: ring_buffer::Fixed<Vec<[f32; 1]>>,
-               switch: &mut SwitchStatus,
-               print: bool) {
+fn process_buf(
+    rec_buf: &[f32],
+    ring_buffer: ring_buffer::Fixed<Vec<[f32; 1]>>,
+    switch: &mut SwitchStatus,
+    print: bool,
+) {
     let frame = signal::from_interleaved_samples_iter::<_, [f32; 1]>(rec_buf.iter().cloned());
 
-    let detector = envelope::Detector::rms(ring_buffer,
-                                           common::ATTACK,
-                                           common::RELEASE);
+    let detector = envelope::Detector::rms(ring_buffer, common::ATTACK, common::RELEASE);
     let envelope = frame.detect_envelope(detector);
 
     let last = envelope.until_exhausted().last().unwrap()[0];
@@ -101,7 +101,11 @@ fn process_buf(rec_buf: &[f32],
     switch.update_level(db);
 
     if print {
-        println!("{:?}\t{:?}", common::to_db(last), if switch.is_on() { 20.0 } else { 0.0 });
+        println!(
+            "{:?}\t{:?}",
+            common::to_db(last),
+            if switch.is_on() { 20.0 } else { 0.0 }
+        );
     }
 }
 

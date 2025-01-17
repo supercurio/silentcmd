@@ -1,19 +1,19 @@
 #[macro_use]
 extern crate serde_derive;
+extern crate dasp;
 extern crate docopt;
 extern crate hound;
-extern crate dasp;
 
 pub mod common;
 
 use docopt::Docopt;
 
-use dasp::{envelope, ring_buffer, Sample};
-use dasp::{signal, Signal, signal::envelope::SignalEnvelope};
 use dasp::sample::I24;
-use std::process;
+use dasp::{envelope, ring_buffer, Sample};
+use dasp::{signal, signal::envelope::SignalEnvelope, Signal};
 use std::i16;
 use std::i32;
+use std::process;
 
 const USAGE: &str = "
 Silent Command for WAV file.
@@ -46,7 +46,10 @@ fn main() {
     eprintln!("Spec: {:?}", reader.spec());
 
     if reader.spec().channels != 1 {
-        eprintln!("Input file must be mono (1 channel instead of {}).", reader.spec().channels);
+        eprintln!(
+            "Input file must be mono (1 channel instead of {}).",
+            reader.spec().channels
+        );
         process::exit(1);
     }
     let bit_per_sample = reader.spec().bits_per_sample;
@@ -56,25 +59,22 @@ fn main() {
     let mut total = Vec::new();
     loop {
         let buf = match reader.spec().sample_format {
-            hound::SampleFormat::Int => {
-                reader.samples::<i32>()
-                    .take(args.flag_window)
-                    .filter_map(Result::ok)
-                    .map(|s|
-                        match bit_per_sample {
-                            16 => s as f32 / f32::from(i16::MAX),
-                            24 => I24::new(s).unwrap().to_float_sample(),
-                            32 => s as f32 / i32::MAX as f32,
-                            _ => 0.0,
-                        })
-                    .collect::<Vec<_>>()
-            }
-            hound::SampleFormat::Float => {
-                reader.samples::<f32>()
-                    .take(args.flag_window)
-                    .filter_map(Result::ok)
-                    .collect::<Vec<_>>()
-            }
+            hound::SampleFormat::Int => reader
+                .samples::<i32>()
+                .take(args.flag_window)
+                .filter_map(Result::ok)
+                .map(|s| match bit_per_sample {
+                    16 => s as f32 / f32::from(i16::MAX),
+                    24 => I24::new(s).unwrap().to_float_sample(),
+                    32 => s as f32 / i32::MAX as f32,
+                    _ => 0.0,
+                })
+                .collect::<Vec<_>>(),
+            hound::SampleFormat::Float => reader
+                .samples::<f32>()
+                .take(args.flag_window)
+                .filter_map(Result::ok)
+                .collect::<Vec<_>>(),
         };
 
         if buf.is_empty() {

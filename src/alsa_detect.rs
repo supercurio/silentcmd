@@ -1,18 +1,18 @@
 #[macro_use]
 extern crate serde_derive;
-extern crate docopt;
 extern crate alsa;
 extern crate dasp;
+extern crate docopt;
 
 pub mod common;
 pub mod switch;
 
-use std::collections::HashSet;
-use docopt::Docopt;
+use alsa::pcm::{Access, Format, HwParams, PCM};
 use alsa::{Direction, ValueOr};
-use alsa::pcm::{PCM, HwParams, Format, Access};
 use dasp::{envelope, ring_buffer, Sample};
-use dasp::{signal, Signal, signal::envelope::SignalEnvelope};
+use dasp::{signal, signal::envelope::SignalEnvelope, Signal};
+use docopt::Docopt;
+use std::collections::HashSet;
 use std::sync::mpsc;
 use switch::SwitchStatus;
 
@@ -54,7 +54,8 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     // validate channels
-    let channels: HashSet<usize> = args.flag_channels
+    let channels: HashSet<usize> = args
+        .flag_channels
         .trim()
         .split(',')
         .map(|s| s.parse().unwrap())
@@ -62,37 +63,38 @@ fn main() {
     let channel_count = *channels.iter().max().unwrap();
 
     let alsa_device_name = args.flag_device;
-    eprintln!("Recording {} channels from ALSA device: {}, keeping channel(s) {:?}",
-              channel_count,
-              alsa_device_name,
-              channels);
+    eprintln!(
+        "Recording {} channels from ALSA device: {}, keeping channel(s) {:?}",
+        channel_count, alsa_device_name, channels
+    );
 
     let pcm = PCM::new(&alsa_device_name, Direction::Capture, false).unwrap();
 
     let hwp = HwParams::any(&pcm).unwrap();
     hwp.set_channels(channel_count as u32).unwrap();
-    hwp.set_rate(args.flag_sample_rate, ValueOr::Nearest).unwrap();
-    hwp.set_format(
-        match args.flag_bits {
-            16 => Format::s16(),
-            24 => Format::s24(),
-            _ => Format::s32(),
-        }).unwrap();
+    hwp.set_rate(args.flag_sample_rate, ValueOr::Nearest)
+        .unwrap();
+    hwp.set_format(match args.flag_bits {
+        16 => Format::s16(),
+        24 => Format::s24(),
+        _ => Format::s32(),
+    })
+    .unwrap();
     hwp.set_access(Access::RWInterleaved).unwrap();
     pcm.hw_params(&hwp).unwrap();
 
     let hwp = pcm.hw_params_current().unwrap();
-    eprintln!("HW buffer size: {}, period size: {}, periods: {}",
-              hwp.get_buffer_size().unwrap(),
-              hwp.get_period_size().unwrap(),
-              hwp.get_periods().unwrap());
+    eprintln!(
+        "HW buffer size: {}, period size: {}, periods: {}",
+        hwp.get_buffer_size().unwrap(),
+        hwp.get_period_size().unwrap(),
+        hwp.get_periods().unwrap()
+    );
 
     let buf_size = args.flag_buffer_size;
     let ring_buffer = ring_buffer::Fixed::from(vec![[0.0]; buf_size]);
     let (tx, rx) = mpsc::channel();
-    let mut switch = SwitchStatus::new(args.flag_threshold,
-                                       args.flag_timeout,
-                                       tx);
+    let mut switch = SwitchStatus::new(args.flag_threshold, args.flag_timeout, tx);
     SwitchStatus::start(args.arg_cmd_on, args.arg_cmd_off, rx);
 
     match args.flag_bits {
@@ -121,10 +123,12 @@ fn main() {
                         .to_sample::<i32>();
                 }
 
-                process_buf(&de_interleaved_i32,
-                            ring_buffer.clone(),
-                            &mut switch,
-                            args.flag_verbose);
+                process_buf(
+                    &de_interleaved_i32,
+                    ring_buffer.clone(),
+                    &mut switch,
+                    args.flag_verbose,
+                );
             }
         }
         _ => {
@@ -143,24 +147,26 @@ fn main() {
                     de_interleaved_i32[i] = (val / channel_count as i64) as i32;
                 }
 
-                process_buf(&de_interleaved_i32,
-                            ring_buffer.clone(),
-                            &mut switch,
-                            args.flag_verbose);
+                process_buf(
+                    &de_interleaved_i32,
+                    ring_buffer.clone(),
+                    &mut switch,
+                    args.flag_verbose,
+                );
             }
         }
     }
 }
 
-fn process_buf(rec_buf: &[i32],
-               ring_buffer: ring_buffer::Fixed<Vec<[f32; 1]>>,
-               switch: &mut SwitchStatus,
-               print: bool) {
+fn process_buf(
+    rec_buf: &[i32],
+    ring_buffer: ring_buffer::Fixed<Vec<[f32; 1]>>,
+    switch: &mut SwitchStatus,
+    print: bool,
+) {
     let frame = signal::from_interleaved_samples_iter::<_, [i32; 1]>(rec_buf.iter().cloned());
 
-    let detector = envelope::Detector::rms(ring_buffer,
-                                           common::ATTACK,
-                                           common::RELEASE);
+    let detector = envelope::Detector::rms(ring_buffer, common::ATTACK, common::RELEASE);
     let envelope = frame.detect_envelope(detector);
 
     let last = envelope.until_exhausted().last().unwrap()[0];
@@ -169,6 +175,10 @@ fn process_buf(rec_buf: &[i32],
     switch.update_level(db);
 
     if print {
-        println!("{:?}\t{:?}", common::to_db(last), if switch.is_on() { 20.0 } else { 0.0 });
+        println!(
+            "{:?}\t{:?}",
+            common::to_db(last),
+            if switch.is_on() { 20.0 } else { 0.0 }
+        );
     }
 }
