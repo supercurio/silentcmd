@@ -2,7 +2,7 @@
 extern crate serde_derive;
 extern crate docopt;
 extern crate alsa;
-extern crate sample;
+extern crate dasp;
 
 pub mod common;
 pub mod switch;
@@ -11,7 +11,8 @@ use std::collections::HashSet;
 use docopt::Docopt;
 use alsa::{Direction, ValueOr};
 use alsa::pcm::{PCM, HwParams, Format, Access};
-use sample::{signal, Signal, envelope, ring_buffer, Sample};
+use dasp::{envelope, ring_buffer, Sample};
+use dasp::{signal, Signal, signal::envelope::SignalEnvelope};
 use std::sync::mpsc;
 use switch::SwitchStatus;
 

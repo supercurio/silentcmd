@@ -2,21 +2,18 @@
 extern crate serde_derive;
 extern crate docopt;
 extern crate hound;
-extern crate sample;
+extern crate dasp;
 
 pub mod common;
 
 use docopt::Docopt;
 
-use sample::{signal, Signal};
-use sample::envelope;
-use sample::ring_buffer;
-use sample::{I24, Sample};
-
+use dasp::{envelope, ring_buffer, Sample};
+use dasp::{signal, Signal, signal::envelope::SignalEnvelope};
+use dasp::sample::I24;
 use std::process;
 use std::i16;
 use std::i32;
-
 
 const USAGE: &str = "
 Silent Command for WAV file.

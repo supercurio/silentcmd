@@ -2,17 +2,33 @@
 name = "silentcmd"
 version = "0.1.0"
 authors = ["François Simond <dev@supercurio.net>"]
+edition = "2021"
 
 [dependencies]
-sample = "0.9.0"
-jack = { git = "https://github.com/RustAudio/rust-jack.git" }
+dasp = { version = "0.11.0", features = [
+    "envelope",
+    "envelope-rms",
+    "ring_buffer",
+    "rms",
+    "signal",
+    "signal-envelope",
+] }
+dasp_envelope = "0.11.0"
+dasp_frame = "0.11.0"
+dasp_peak = "0.11.0"
+dasp_ring_buffer = "0.11.0"
+dasp_rms = "0.11.0"
+dasp_sample = "0.11.0"
+dasp_signal = "0.11.0"
+dasp_slice = "0.11.0"
+jack = "0.13.0"
 serde = "1"
 serde_derive = "1"
-docopt = "0.8"
-hound = "3.3.0"
+docopt = "1.1.1"
+hound = "3.5.1"
 
 [target.'cfg(target_os="linux")'.dependencies]
-alsa = "0.2.0"
+alsa = "0.9.1"
 
 [[bin]]
 name = "silentcmd-jack"
