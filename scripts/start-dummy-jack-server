@@ -1,0 +1,4 @@
+#!/bin/sh
+# Starts a dummy JACK server
+
+exec jackd -r -ddummy -r48000 -p512

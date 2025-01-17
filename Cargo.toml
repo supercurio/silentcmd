@@ -1,0 +1,27 @@
+[package]
+name = "audio-signal-detect"
+version = "0.1.0"
+authors = ["François Simond <dev@supercurio.net>"]
+
+[dependencies]
+sample = "0.9.0"
+jack = { git = "https://github.com/RustAudio/rust-jack.git" }
+serde = "1"
+serde_derive = "1"
+docopt = "0.8"
+hound = "3.3.0"
+
+[target.'cfg(target_os="linux")'.dependencies]
+alsa = "0.2.0"
+
+[[bin]]
+name = "signal-detect-jack"
+path = "src/jack_plugin.rs"
+
+[[bin]]
+name = "signal-detect-wav"
+path = "src/wav_detect.rs"
+
+[[bin]]
+name = "signal-detect-alsa"
+path = "src/alsa_detect.rs"

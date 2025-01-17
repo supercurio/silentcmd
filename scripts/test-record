@@ -1,0 +1,1 @@
+cargo build --release && ./target/release/signal-detect-alsa --device=hw:2,0 --channels=1,2 --bits=16 > /tmp/data.dat
