@@ -13,14 +13,6 @@ dasp = { version = "0.11.0", features = [
     "signal",
     "signal-envelope",
 ] }
-dasp_envelope = "0.11.0"
-dasp_frame = "0.11.0"
-dasp_peak = "0.11.0"
-dasp_ring_buffer = "0.11.0"
-dasp_rms = "0.11.0"
-dasp_sample = "0.11.0"
-dasp_signal = "0.11.0"
-dasp_slice = "0.11.0"
 jack = "0.13.0"
 serde = "1"
 serde_derive = "1"
